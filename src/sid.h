@@ -1,0 +1,26 @@
+#ifndef SID_H
+#define SID_H
+
+#include "user.h"
+#include <QObject>
+#include <QVariant>
+
+namespace QFlow{
+
+class SIDUserPrivate;
+class WAMP_EXPORT SIDUser : public User
+{
+    Q_OBJECT
+public:
+    SIDUser(QObject* parent = NULL);
+    ~SIDUser();
+    QByteArray response(QByteArray challenge);
+    QString authMethod() const;
+    bool checkTokenMembership(QVariant handle);
+protected:
+    SIDUser(SIDUserPrivate &dd, QObject *parent);
+private:
+    Q_DECLARE_PRIVATE(SIDUser)
+};
+}
+#endif // SID_H

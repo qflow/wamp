@@ -1,0 +1,2 @@
+module QFlow.Wamp
+plugin wamp
