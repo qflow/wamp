@@ -1,7 +1,7 @@
 # Introduction
 [Router](src/client/README.md)
 # Get sources
-    git clone --recursive git@gitlab.com:qflow/wamp.git
+    git clone --recursive git@github.com:qflow/wamp.git
 
 # Build
     qbs --recursive wamp
