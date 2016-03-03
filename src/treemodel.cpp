@@ -17,7 +17,7 @@ void TreeModel::setData(WampConnection* connection)
                       [this](const QVariant& result){
         beginResetModel();
         QStringList uriList = result.toStringList();
-        Q_FOREACH (QString uri, uriList) {
+        for(QString uri: uriList) {
             _rootItem->add(uri);
         }
         endResetModel();
@@ -30,7 +30,7 @@ void TreeModel::setData(WampConnection* connection)
 void TreeModel::registrationCreated(double /*registrationId*/, QVariantMap args)
 {
     QList<TreeItem*> itemsAdded = _rootItem->add(args["uri"].toString());
-    Q_FOREACH (TreeItem* item, itemsAdded) {
+    for(TreeItem* item: itemsAdded) {
         TreeItem* parent = item->parent();
         QModelIndex parentIndex = createIndex(parent->index(), 0, parent);
         int row = item->index();

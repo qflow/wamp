@@ -34,7 +34,7 @@ public:
     AUTH_RESULT authenticate() override
     {
         QMessageAuthenticationCode hash(QCryptographicHash::Sha256);
-        WampCraUser* crauser = (WampCraUser*)user;
+        WampCraUser* crauser = (WampCraUser*)user.data();
         hash.setKey(crauser->secret().toLatin1());
         QString challengeStr = challenge["challenge"].toString();
         hash.addData(challengeStr.toLatin1());

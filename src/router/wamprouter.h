@@ -4,6 +4,7 @@
 #include "wamp_global.h"
 #include "initiable.h"
 #include "realm.h"
+#include "wamproutersession.h"
 #include <QObject>
 #include <QQmlListProperty>
 
@@ -30,6 +31,9 @@ public:
 Q_SIGNALS:
     void hostChanged();
     void portChanged();
+    void newSession(WampRouterSession* session);
+    void messageReceived(WampRouterSession* session, QVariantList message);
+    void messageSent(WampRouterSession* session, QVariantList message);
 public Q_SLOTS:
 
 private:

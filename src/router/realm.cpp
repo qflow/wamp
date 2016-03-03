@@ -37,6 +37,12 @@ Realm::Realm(QObject *parent) : WampBase(parent), d_ptr(new RealmPrivate())
         resultArr.append(details);
         return WampResult(QVariant(resultArr));
     });
+    registerProcedure(KEY_LOOKUP_REGISTRATION, [this](QVariantList args){
+        QString uri = args[0].toString();
+        if(!this->d_ptr->_uriRegistartion.contains(uri)) return WampResult();
+        WampRouterRegistrationPointer registration = this->d_ptr->_uriRegistartion[uri];
+        return WampResult(QVariant(registration->registrationId()));
+    });
 }
 Realm::~Realm()
 {
@@ -65,7 +71,7 @@ QQmlListProperty<Authenticator> Realm::authenticators()
 Authenticator* Realm::findAuthenticatorByAuthMethod(QString authMethod) const
 {
     Q_D(const Realm);
-    Q_FOREACH(Authenticator* auth, d->_authenticators)
+    for(Authenticator* auth: d->_authenticators)
     {
         if(auth->authMethod() == authMethod) return auth;
     }
@@ -94,7 +100,7 @@ QVariantList Realm::registrationIds()
     Q_D(Realm);
     QVariantList res;
     QMutexLocker lock(&d->_mutex);
-    Q_FOREACH (qulonglong id, d->_idRegistartion.keys())
+    for(qulonglong id: d->_idRegistartion.keys())
     {
         res << id;
     }
@@ -116,7 +122,7 @@ qulonglong RealmPrivate::publish(QString topic, const QVariantList& args)
     if(_uriSubscriptions.contains(topic))
     {
         QList<WampRouterSubscriptionPointer> subscriptions = _uriSubscriptions.values(topic);
-        Q_FOREACH (WampRouterSubscriptionPointer subscription, subscriptions)
+        for(WampRouterSubscriptionPointer subscription: subscriptions)
         {
             subscription->event(publicationId, args);
         }
@@ -157,6 +163,7 @@ void RealmPrivate::removeRegistration(WampRouterRegistrationPointer reg)
     QMutexLocker lock(&_mutex);
     _uriRegistartion.remove(reg->uri());
     _idRegistartion.remove(reg->registrationId());
+    publish(KEY_REGISTRATION_ON_DELETE, {reg->callee()->sessionId(), reg->registrationId()});
 }
 void RealmPrivate::insertPendingInvocation(qulonglong requestId, WampRouterSession *session)
 {
@@ -189,10 +196,20 @@ bool RealmPrivate::containsSubscription(QString topic)
     QMutexLocker lock(&_mutex);
     return _uriSubscriptions.contains(topic);
 }
+bool RealmPrivate::containsSubscription(qulonglong subscriptionId)
+{
+    QMutexLocker lock(&_mutex);
+    return _subscriptions.contains(subscriptionId);
+}
 WampRouterSubscriptionPointer RealmPrivate::takeSubscription(qulonglong subscriptionId)
 {
     QMutexLocker lock(&_mutex);
     WampRouterSubscriptionPointer sub = _subscriptions.take(subscriptionId);
+    if(!sub)
+    {
+        qDebug() << QString("Subscription id %1 already removed from realm %2").arg(subscriptionId).arg(_name);
+        return WampRouterSubscriptionPointer();
+    }
     _uriSubscriptions.remove(sub->topic(), sub);
     if(!_uriSubscriptions.contains(sub->topic()))
     {

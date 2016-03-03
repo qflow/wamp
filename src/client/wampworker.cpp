@@ -10,6 +10,7 @@
 #include "call.h"
 #include <QJsonObject>
 #include <QJsonDocument>
+#include <QCoreApplication>
 
 namespace QFlow{
 
@@ -56,6 +57,10 @@ void WampWorker::closed()
     qDebug() << "WampConnection: WebSocket closed";
     Q_EMIT _socketPrivate->q_ptr->disconnected();
     _timer->start();
+}
+void WampWorker::flush()
+{
+    QCoreApplication::processEvents();
 }
 
 void WampWorker::opened()
@@ -109,9 +114,8 @@ void WampWorker::messageReceived(const QByteArray &message)
     {
         QString uri = arr[2].toString();
         QVariantMap details = arr[1].toMap();
-        /*WampError wampError((int)WampMsgCode::ABORT, 0, details, uri, QVariantList());
-        Q_EMIT _socketPrivate->q_ptr->error(wampError);*/
-        qDebug() << uri;
+        WampError wampError((int)WampMsgCode::ABORT, 0, details, uri, QVariantList());
+        Q_EMIT _socketPrivate->q_ptr->error(wampError);
     }
     if(code == WampMsgCode::WELCOME)
     {
@@ -123,6 +127,11 @@ void WampWorker::messageReceived(const QByteArray &message)
         qulonglong requestId = arr[1].toULongLong();
         RegistrationPointer reg = _socketPrivate->_pendingRegistrations.take(requestId);
         reg->setRegistrationId(regId);
+        if(_socketPrivate->_uriRegistration.contains(reg->uri()))
+        {
+            RegistrationPointer oldReg = _socketPrivate->_uriRegistration.take(reg->uri());
+            _socketPrivate->_registrations.remove(oldReg->registrationId());
+        }
         _socketPrivate->_registrations[regId] = reg;
         _socketPrivate->_uriRegistration[reg->uri()] = reg;
     }
@@ -139,6 +148,11 @@ void WampWorker::messageReceived(const QByteArray &message)
         qulonglong requestId = arr[1].toULongLong();
         SubscriptionPointer sub = _socketPrivate->_pendingSubscriptions.take(requestId);
         sub->setSubscriptionId(subId);
+        if(_socketPrivate->_uriSubscription.contains(sub->uri()))
+        {
+            SubscriptionPointer oldSub = _socketPrivate->_uriSubscription.take(sub->uri());
+            _socketPrivate->_subscriptions.remove(oldSub->subscriptionId());
+        }
         _socketPrivate->_subscriptions[subId] = sub;
         _socketPrivate->_uriSubscription[sub->uri()] = sub;
     }

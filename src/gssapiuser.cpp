@@ -115,6 +115,11 @@ QByteArray GSSAPIUser::response(QByteArray challenge)
                                &d->_attrs,
                                &d->_serviceLifetime
                                );
+    if(status == 0)
+    {
+        d->_first = true;
+        d->_context = CtxtHandle();
+    }
     QByteArray token((const char *)d->_outSecBuf.pvBuffer, d->_outSecBuf.cbBuffer);
     return token;
 #endif

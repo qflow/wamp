@@ -23,6 +23,7 @@ public Q_SLOTS:
     void sendTextMessage(const QString& message);
     void sendBinaryMessage(const QByteArray& message);
     void reconnect();
+    void flush();
 };
 }
 #endif // WAMPWORKER_H

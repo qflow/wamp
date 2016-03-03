@@ -17,6 +17,9 @@ class WampRouterSessionPrivate;
 class WampRouterSession : public QThread
 {
     Q_OBJECT
+    Q_PROPERTY(QString  authId READ authId)
+    Q_PROPERTY(qulonglong sessionId READ sessionId)
+    Q_PROPERTY(QString peerAddress READ peerAddress)
 public:
     WampRouterSession(WebSocketConnection* socket, QString subprotocol, QObject* parent);
     qulonglong sessionId() const;
@@ -24,13 +27,22 @@ public:
     Realm* realm() const;
     void invoke(qulonglong requestId, QString uri);
     User* user() const;
-    void setUser(User* value);
     void sendWampMessage(const QVariantList& arr);
     void result(qulonglong requestId, QVariant result);
+    QString authId() const;
 public Q_SLOTS:
     QString peerAddress() const;
 Q_SIGNALS:
     void closed();
+    void aborted(QString uri, QString message);
+    void messageSent(QVariantList message);
+    void messageReceived(QVariantList message);
+    void subscribed(QString topic);
+    void unsubscribed(QString topic);
+    void registered(QString uri);
+    void unregistered(QString uri);
+    void error(WampMsgCode code, QString uri);
+    void welcomed();
 private:
     void run();
     WampRouterSessionPrivate* d_ptr;

@@ -9,6 +9,7 @@
 #include "credentialstore.h"
 #include "wampinvocation.h"
 #include "wampmessageserializer.h"
+#include <QHostAddress>
 
 namespace QFlow{
 
@@ -22,7 +23,7 @@ WampRouterWorker::~WampRouterWorker()
 }
 void WampRouterWorker::startServer()
 {
-    Q_FOREACH (Realm* realm, _realms) {
+    for(Realm* realm: _realms) {
         realm->setParent(this);
     }
     _server.reset(new WebSocketServer());
@@ -36,8 +37,9 @@ void WampRouterWorker::startServer()
 void WampRouterWorker::onNewConnection(WebSocketConnection *con)
 {
     QStringList subprotocols = con->requestedSubprotocols();
+    qDebug() << QString("Web Socket connection opened. Requested subprotocols: %1 Peer Address: %2").arg(subprotocols.join(",")).arg(con->peerAddress().toString());
     QString selectedSub;
-    Q_FOREACH(QString sub, subprotocols)
+    for(QString sub: subprotocols)
     {
         if(sub == KEY_WAMP_JSON_SUB) selectedSub = KEY_WAMP_JSON_SUB;
         else if(sub == KEY_WAMP_MSGPACK_SUB)
@@ -51,7 +53,10 @@ void WampRouterWorker::onNewConnection(WebSocketConnection *con)
     con->accept(true);
     WampRouterSessionPointer newSession(new WampRouterSession(con, selectedSub, this));
     QObject::connect(newSession.data(), SIGNAL(closed()), this, SLOT(sessionClosed()));
+    QObject::connect(newSession.data(), SIGNAL(messageReceived(QVariantList)), _router, SLOT(messageReceived(QVariantList)));
+    QObject::connect(newSession.data(), SIGNAL(messageSent(QVariantList)), _router, SLOT(messageSent(QVariantList)));
     _sessions.insert(newSession->sessionId(), newSession);
+    Q_EMIT _router->q_ptr->newSession(newSession.data());
 }
 void WampRouterWorker::sessionClosed()
 {

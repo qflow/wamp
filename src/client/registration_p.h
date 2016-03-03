@@ -49,13 +49,17 @@ public:
     {
         return _resultData;
     }
-    bool isError() const
+    Q_INVOKABLE bool isError() const
     {
         return !(_errorUri.isEmpty() || _errorUri.isNull());
     }
     QString errorUri() const
     {
         return _errorUri;
+    }
+    Q_INVOKABLE bool isNull() const
+    {
+        return _resultData.isNull();
     }
 };
 class Impl
@@ -114,7 +118,7 @@ public:
     WampResult execute(const QVariantList& args) override
     {
         QJSValueList params;
-        Q_FOREACH (QVariant val, args) {
+        for(QVariant val: args) {
             //QJSValue param = Helper::variantToJS(val, _callback.engine());
             QJSValue param = _callback.engine()->toScriptValue(val);
             params.append(param);

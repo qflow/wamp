@@ -38,6 +38,10 @@ public:
     {
         return _created;
     }
+    WampRouterSession* callee() const
+    {
+        return _session;
+    }
 private:
     qulonglong _registrationId;
     QString _uri;
@@ -97,7 +101,9 @@ public:
     WampRouterPrivate(WampRouter* parent);
     ~WampRouterPrivate();
 public Q_SLOTS:
-private:
+    void messageReceived(QVariantList message);
+    void messageSent(QVariantList message);
+public:
     WampRouter* q_ptr;
     Q_DECLARE_PUBLIC(WampRouter)
 };

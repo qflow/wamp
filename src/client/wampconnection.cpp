@@ -28,6 +28,10 @@ WampConnectionPrivate::WampConnectionPrivate(WampConnection* parent) : QObject()
 }
 WampConnectionPrivate::~WampConnectionPrivate()
 {
+    QVariantList arr{(int)WampMsgCode::GOODBYE, QVariantMap(), "wamp.error.system_shutdown"};
+    sendWampMessage(arr);
+    QMetaObject::invokeMethod(_worker, "flush", Qt::BlockingQueuedConnection);
+    _socket->close();
     _workerThread.quit();
     _workerThread.wait();
 }
@@ -80,6 +84,11 @@ void WampConnectionPrivate::handleInvocation(WampInvocationPointer invocation)
 }
 void WampConnectionPrivate::sendWampMessage(const QVariantList &arr)
 {
+    if(!_serializer)
+    {
+        qDebug() << "Serializer not instatiated yet";
+        return;
+    }
     QByteArray message = _serializer->serialize(arr);
     if(_serializer->isBinary())
     {

@@ -24,7 +24,7 @@ class AuthSession
 public:
     QVariantMap challenge;
     QPointer<Authenticator> authenticator;
-    User* user;
+    QPointer<User> user;
     QByteArray inBuffer;
     QByteArray outBuffer;
     AuthSession();

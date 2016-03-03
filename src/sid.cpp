@@ -1,5 +1,8 @@
 #include "sid.h"
 #include "user_p.h"
+#include <QMutex>
+#include <QDebug>
+#include <atomic>
 
 #ifdef Q_OS_WIN
 #include <Windows.h>
@@ -12,9 +15,9 @@ namespace QFlow{
 class SIDUserPrivate : public UserPrivate
 {
 public:
-    bool _initialized;
+    std::atomic<bool> _initialized;
 #ifdef Q_OS_WIN
-    SID _sid;
+    PSID _sid;
 #endif
     SIDUserPrivate() : UserPrivate(), _initialized(false)
     {
@@ -22,7 +25,7 @@ public:
     }
     ~SIDUserPrivate()
     {
-
+        //FreeSid(_sid);
     }
 };
 
@@ -37,7 +40,6 @@ SIDUser::SIDUser(SIDUserPrivate &dd, QObject *parent) : User(dd, parent)
 
 SIDUser::~SIDUser()
 {
-
 }
 QByteArray SIDUser::response(QByteArray)
 {
@@ -47,30 +49,36 @@ QString SIDUser::authMethod() const
 {
     return QString();
 }
+ErrorInfo SIDUser::init()
+{
+    Q_D(SIDUser);
+    BOOL b;
+    d->_sid = new SID();
+    DWORD cbSid = sizeof(SID);
+    DWORD cchReferencedDomainName = 0;
+    SID_NAME_USE sidNameUse;
+    LPCTSTR s = (LPCTSTR)name().utf16();
+    LPTSTR refDomain = NULL;
+
+    b = LookupAccountName(NULL,
+                               s,
+                               d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
+    SecureZeroMemory(d->_sid, cbSid);
+    refDomain = new TCHAR[cchReferencedDomainName];
+    b = LookupAccountName(NULL,
+                               s,
+                               d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
+    return ErrorInfo();
+}
+
 bool SIDUser::checkTokenMembership(QVariant handle)
 {
 #ifdef Q_OS_WIN
     Q_D(SIDUser);
     BOOL b;
-    if(!d->_initialized)
-    {
-        DWORD cbSid = sizeof(d->_sid);
-        DWORD cchReferencedDomainName = 0;
-        SID_NAME_USE sidNameUse;
-        LPCTSTR s = (LPCTSTR)name().utf16();
-        LPTSTR refDomain = NULL;
-        b = LookupAccountName(NULL,
-                                   s,
-                                   &d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
-        SecureZeroMemory(&d->_sid, cbSid);
-        refDomain = new TCHAR[cchReferencedDomainName];
-        b = LookupAccountName(NULL,
-                                   s,
-                                   &d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
-    }
     HANDLE accessHandle = handle.value<void*>();
     BOOL isMember;
-    b = CheckTokenMembership(accessHandle, &d->_sid, &isMember);
+    b = CheckTokenMembership(accessHandle, d->_sid, &isMember);
     return isMember;
 #endif
 #ifdef Q_OS_LINUX

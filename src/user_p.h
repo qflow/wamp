@@ -9,7 +9,7 @@ class UserPrivate
 {
 public:
     UserPrivate();
-    ~UserPrivate();
+    virtual ~UserPrivate();
     QString _name;
     Role* _role;
 };

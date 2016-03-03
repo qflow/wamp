@@ -46,6 +46,7 @@ public:
     void insertSubscription(qulonglong subscriptionId, QString topic, WampRouterSubscriptionPointer subscription);
     QMultiHash<QString, WampRouterSubscriptionPointer> _uriSubscriptions;
     bool containsSubscription(QString topic);
+    bool containsSubscription(qulonglong subscriptionId);
     qulonglong publish(QString topic, const QVariantList& args);
 
     RealmPrivate();

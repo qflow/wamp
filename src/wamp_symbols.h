@@ -20,6 +20,7 @@ const QString KEY_ERR_NOT_AUTHORIZED = QStringLiteral("wamp.error.not_authorized
 const QString KEY_ERR_NOT_AUTHENTICATED = QStringLiteral("wamp.error.not_authenticated");
 const QString KEY_ERR_NO_SUCH_PROCEDURE = QStringLiteral("wamp.error.no_such_procedure");
 const QString KEY_ERR_NO_SUCH_REGISTRATION = QStringLiteral("wamp.error.no_such_registration");
+const QString KEY_ERR_NO_SUCH_SUBSCRIPTION = QStringLiteral("wamp.error.no_such_subscription");
 const QString KEY_ERR_NO_SUCH_REALM = QStringLiteral("wamp.error.no_such_realm");
 const QString KEY_WAMP_JSON_SUB = QStringLiteral("wamp.2.json");
 const QString KEY_WAMP_MSGPACK_SUB = QStringLiteral("wamp.2.msgpack");

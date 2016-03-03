@@ -98,8 +98,7 @@ bool DefaultAuthorizer::authorize(QString /*authId*/, QString uri, WampMsgCode a
     }
     if(action == WampMsgCode::CALL)
     {
-        if(!d->_allowCall) return false;
-        return match;
+        return d->_allowCall && match;
     }
     else if(action == WampMsgCode::PUBLISH)
     {
@@ -107,8 +106,7 @@ bool DefaultAuthorizer::authorize(QString /*authId*/, QString uri, WampMsgCode a
     }
     else if(action == WampMsgCode::SUBSCRIBE)
     {
-        if(!d->_allowSubscribe) return false;
-        return match;
+        return d->_allowSubscribe && match;
     }
     else if(action == WampMsgCode::REGISTER)
     {

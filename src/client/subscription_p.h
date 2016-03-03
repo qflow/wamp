@@ -58,7 +58,7 @@ public:
     void handle(const QVariantList& args) override
     {
         QJSValueList params;
-        Q_FOREACH (QVariant val, args) {
+        for(QVariant val: args) {
             QByteArray arr = val.toByteArray();
             //QJSValue param = Helper::variantToJS(val, _callback.engine());
             QJSValue param = _callback.engine()->toScriptValue(val);

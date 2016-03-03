@@ -15,6 +15,7 @@
 #include "treemodel.h"
 #include "gssapiuser.h"
 #include "sid.h"
+#include "wamproutersession.h"
 
 namespace QFlow{
 
@@ -26,6 +27,7 @@ void Wamp::registerTypes(const char *uri)
     qmlRegisterType<Realm>(uri, 1, 0, "Realm");
     qmlRegisterType<Role>(uri, 1, 0, "Role");
     qmlRegisterUncreatableType<Authorizer>(uri, 1, 0, "Authorizer", "Cannot instatiate Authorizer base type");
+    qmlRegisterUncreatableType<WampRouterSession>(uri, 1, 0, "WampRouterSession", "Cannot instatiate WampRouterSession type");
     qmlRegisterType<DefaultAuthorizer>(uri, 1, 0, "DefaultAuthorizer");
     qmlRegisterType<WampCraAuthenticator>(uri, 1, 0, "WampCraAuthenticator");
     qmlRegisterType<GSSAPIAuthenticator>(uri, 1, 0, "GSSAPIAuthenticator");

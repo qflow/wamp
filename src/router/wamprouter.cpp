@@ -21,7 +21,16 @@ WampRouterPrivate::WampRouterPrivate(WampRouter* parent) : QObject(), _port(8080
 WampRouterPrivate::~WampRouterPrivate()
 {
 }
-
+void WampRouterPrivate::messageReceived(QVariantList message)
+{
+    Q_Q(WampRouter);
+    Q_EMIT q->messageReceived((WampRouterSession*) sender(), message);
+}
+void WampRouterPrivate::messageSent(QVariantList message)
+{
+    Q_Q(WampRouter);
+    Q_EMIT q->messageSent((WampRouterSession*) sender(), message);
+}
 WampRouter::WampRouter(QObject *parent) : QObject(parent), d_ptr(new WampRouterPrivate(this))
 {
 
@@ -55,7 +64,7 @@ ErrorInfo WampRouter::init()
 {
     Q_D(WampRouter);
 
-    Q_FOREACH (Realm* realm, d->_worker->_realms) {
+    for(Realm* realm: d->_worker->_realms) {
         realm->setParent(NULL);
         realm->moveToThread(d->_workerThread);
     }

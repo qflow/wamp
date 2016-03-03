@@ -75,7 +75,7 @@ struct pack<QVariantList> {
     template <typename Stream>
     packer<Stream>& operator()(msgpack::packer<Stream>& o, QVariantList const& arr) const {
         o.pack_array(arr.length());
-        Q_FOREACH(QVariant var, arr)
+        for(QVariant var: arr)
         {
             o.pack(var);
         }
@@ -87,7 +87,7 @@ struct pack<QVariantMap> {
     template <typename Stream>
     packer<Stream>& operator()(msgpack::packer<Stream>& o, QVariantMap const& map) const {
         o.pack_map(map.count());
-        Q_FOREACH(QString key, map.keys())
+        for(QString key: map.keys())
         {
             o.pack(key.toStdString());
             o.pack(map[key]);
@@ -201,7 +201,7 @@ QVariant toBase64(const QVariant& var)
     else if((QMetaType::Type)var.type() == QMetaType::QVariantMap)
     {
         QVariantMap map = var.toMap();
-        Q_FOREACH(QString key, map.keys())
+        for(QString key: map.keys())
         {
             map[key] = toBase64(map[key]);
         }

@@ -26,6 +26,7 @@ WampRouterSessionPrivate::~WampRouterSessionPrivate()
 }
 void WampRouterSessionPrivate::sendWampMessage(const QVariantList& arr)
 {
+    Q_Q(WampRouterSession);
     QByteArray message = _serializer->serialize(arr);
     if(_serializer->isBinary())
     {
@@ -35,6 +36,7 @@ void WampRouterSessionPrivate::sendWampMessage(const QVariantList& arr)
     {
         _socket->sendText(message);
     }
+    Q_EMIT q->messageSent(arr);
 }
 WampRouterSession::WampRouterSession(WebSocketConnection *socket, QString subprotocol, QObject *parent) : QThread(parent), d_ptr(new WampRouterSessionPrivate(this))
 {
@@ -52,12 +54,13 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
 {
     Q_Q(WampRouterSession);
     QVariantList arr = _serializer->deserialize(message);
+    Q_EMIT q->messageReceived(arr);
     WampMsgCode code = (WampMsgCode)arr[0].toInt();
     if(code == WampMsgCode::HELLO)
     {
         QString realmName = arr[1].toString();
         Realm* realmFound = NULL;
-        Q_FOREACH (Realm* r, _router->_realms) {
+        for(Realm* r: _router->_realms) {
             if(realmName == r->name())
             {
                 realmFound = r;
@@ -75,21 +78,20 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
         {
             QVariantList authMethods2 = details["authmethods"].toList();
             Authenticator* foundAuth = NULL;
-            Q_FOREACH(QVariant authMethod, authMethods2)
+            for(QVariant authMethod: authMethods2)
             {
                 foundAuth = realmFound->findAuthenticatorByAuthMethod(authMethod.toString());
                 if(foundAuth) break;
             }
             if(foundAuth)
             {
-                QString authId = details["authid"].toString();
-                QVariantMap challenge = foundAuth->generateChallenge(_sessionId, authId);
+                _authId = details["authid"].toString();
+                QVariantMap challenge = foundAuth->generateChallenge(_sessionId, _authId);
                 QVariantList authArr{WampMsgCode::CHALLENGE, foundAuth->authMethod(), challenge};
                 _authSession.reset(foundAuth->createSession());
                 _authSession->challenge = challenge;
                 _authSession->authenticator = foundAuth;
-                _authSession->user = foundAuth->user(authId);
-                _user = foundAuth->user(authId);
+                _authSession->user = foundAuth->user(_authId);
                 sendWampMessage(authArr);
                 return;
             }
@@ -107,7 +109,7 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
             {
                 welcome();
             }
-            else abort(KEY_ERR_NOT_AUTHENTICATED);
+            else abort(KEY_ERR_NOT_AUTHORIZED);
         }
         if(authResult == AUTH_RESULT::REJECTED)
         {
@@ -139,6 +141,7 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
         _realm->publish(KEY_REGISTRATION_ON_CREATE, onCreateArgs);
         QVariantList resArr{WampMsgCode::REGISTERED, requestId, registration->registrationId()};
         sendWampMessage(resArr);
+        Q_EMIT q->registered(uri);
     }
     else if(code == WampMsgCode::UNREGISTER)
     {
@@ -152,6 +155,7 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
             _realm->d_ptr->removeRegistration(reg);
             QVariantList resArr{WampMsgCode::UNREGISTERED, requestId};
             sendWampMessage(resArr);
+            Q_EMIT q->unregistered(reg->uri());
         }
         else
         {
@@ -218,15 +222,22 @@ void WampRouterSessionPrivate::onMessageReceived(const QByteArray &message)
 
         QVariantList resArr{WampMsgCode::SUBSCRIBED, requestId, subscriptionId};
         sendWampMessage(resArr);
+        Q_EMIT q->subscribed(topic);
     }
     else if(code == WampMsgCode::UNSUBSCRIBE)
     {
         qulonglong requestId = arr[1].toULongLong();
         qulonglong subscriptionId = arr[2].toULongLong();
+        if(!_realm->d_ptr->containsSubscription(subscriptionId))
+        {
+            error(WampMsgCode::UNSUBSCRIBE, KEY_ERR_NO_SUCH_SUBSCRIPTION, requestId);
+            return;
+        }
         WampRouterSubscriptionPointer sub = _realm->d_ptr->takeSubscription(subscriptionId);
         _subscriptions.removeAll(sub);
         QVariantList resArr{WampMsgCode::UNSUBSCRIBED, requestId};
         sendWampMessage(resArr);
+        Q_EMIT q->unsubscribed(sub->topic());
     }
     else if(code == WampMsgCode::PUBLISH)
     {
@@ -268,22 +279,28 @@ void WampRouterSession::sendWampMessage(const QVariantList &arr)
 
 void WampRouterSessionPrivate::error(WampMsgCode code, QString uri, qulonglong requestId, QVariantMap details)
 {
+    Q_Q(WampRouterSession);
     QVariantList errArr{WampMsgCode::ERROR, (int)code, requestId, details, uri};
     sendWampMessage(errArr);
+    Q_EMIT q->error(code, uri);
 }
 void WampRouterSessionPrivate::welcome()
 {
+    Q_Q(WampRouterSession);
     QVariantMap roles{{"broker", QVariantMap()}, {"dealer", QVariantMap()}};
     QVariantMap details{{"roles", roles}};
     QVariantList resArr{WampMsgCode::WELCOME, _sessionId, details};
     sendWampMessage(resArr);
+    Q_EMIT q->welcomed();
 }
 void WampRouterSessionPrivate::abort(QString uri, QString message)
 {
+    Q_Q(WampRouterSession);
     QVariantMap details;
     if(!message.isEmpty()) details["message"] = message;
     QVariantList abortArr{WampMsgCode::ABORT, details, uri};
     sendWampMessage(abortArr);
+    Q_EMIT q->aborted(uri, message);
 }
 
 void WampRouterSessionPrivate::result(qulonglong requestId, QVariant result)
@@ -321,18 +338,13 @@ Realm* WampRouterSession::realm() const
 User* WampRouterSession::user() const
 {
     Q_D(const WampRouterSession);
-    return d->_user;
-}
-void WampRouterSession::setUser(User* value)
-{
-    Q_D(WampRouterSession);
-    d->_user = value;
+    return d->_authSession->user.data();
 }
 bool WampRouterSessionPrivate::authorize(QString uri, WampMsgCode action, qulonglong requestId)
 {
-    if(_user)
+    if(_authSession->user)
     {
-        bool authorized = _user->authorize(uri, action);
+        bool authorized = _authSession->user->authorize(uri, action);
         if(!authorized)
         {
             error(action, KEY_ERR_NOT_AUTHORIZED, requestId);
@@ -357,5 +369,9 @@ void WampRouterSessionPrivate::closed()
     }
     Q_EMIT q->closed();
 }
-
+QString WampRouterSession::authId() const
+{
+    Q_D(const WampRouterSession);
+    return d->_authId;
+}
 }

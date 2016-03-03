@@ -26,12 +26,12 @@ public:
     qulonglong _sessionId;
     QPointer<Realm> _realm;
     QPointer<WebSocketConnection> _socket;
-    QPointer<User> _user;
     QScopedPointer<WampMessageSerializer> _serializer;
     QList<WampRouterRegistrationPointer> _registrations;
     QList<WampRouterSubscriptionPointer> _subscriptions;
     WampRouterWorker* _router;
     QScopedPointer<AuthSession> _authSession;
+    QString _authId;
 public Q_SLOTS:
     void sendWampMessage(const QVariantList& arr);
     void onMessageReceived(const QByteArray &message);
