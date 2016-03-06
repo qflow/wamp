@@ -1,7 +1,11 @@
 # Introduction
 [Router](src/client/README.md)
 # Get sources
-    git clone --recursive git@github.com:qflow/wamp.git
+    git clone git@github.com:qflow/wamp.git
+    cd wamp
+    git submodule update --init --remote
+    git submodule foreach git pull origin master
+    git submodule foreach git checkout master
 
 # Build
     qbs --recursive wamp
