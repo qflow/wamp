@@ -4,3 +4,6 @@
 [submodule "qbs"]
 	path = qbs
 	url = git@github.com:qflow/qbs.git
+[submodule "websockets"]
+	path = websockets
+	url = git@github.com:qflow/websockets.git
