@@ -51,6 +51,7 @@ QString SIDUser::authMethod() const
 }
 ErrorInfo SIDUser::init()
 {
+#ifdef Q_OS_WIN
     Q_D(SIDUser);
     BOOL b;
     d->_sid = new SID();
@@ -68,6 +69,7 @@ ErrorInfo SIDUser::init()
     b = LookupAccountName(NULL,
                                s,
                                d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
+#endif
     return ErrorInfo();
 }
 
