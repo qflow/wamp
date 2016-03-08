@@ -267,7 +267,7 @@ Future WampConnection::call2(QString uri, const QVariantList& args, ResultCallba
     Impl* impl = NULL;
     if(callback)
     {
-        Functor<void, QVariant>* functor = new Functor<void,QVariant>(callback);
+        auto* functor = new Functor<void,QVariant>(callback);
         impl = new FunctorImpl(functor);
     }
     CallPointer call(new Call(impl), CallDeleter());

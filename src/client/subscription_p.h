@@ -110,7 +110,7 @@ public:
     }
     void handle(const QVariantList& args) override
     {
-        _functor->call(args);
+        _functor->invoke(args);
     }
 
 };

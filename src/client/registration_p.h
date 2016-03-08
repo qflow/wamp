@@ -263,7 +263,7 @@ public:
     }
     WampResult execute(const QVariantList& args) override
     {
-        QVariant resultVar = _functor->call(args);
+        QVariant resultVar = _functor->invoke(args);
         return WampResult(resultVar);
     }
 
