@@ -14,7 +14,7 @@
 
 namespace QFlow{
 
-typedef std::function<void(const QVariant&)> ResultCallback;
+typedef std::function<void(QVariant)> ResultCallback;
 
 class WampAttached;
 class WampConnectionPrivate;
