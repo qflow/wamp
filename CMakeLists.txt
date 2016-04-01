@@ -1,0 +1,7 @@
+cmake_minimum_required(VERSION 2.8.11)
+set(CMAKE_PREFIX_PATH "/home/michal/Qt/5.6/gcc_64/lib/cmake")
+set(CMAKE_INSTALL_PREFIX "./install")
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} "${CMAKE_SOURCE_DIR}/cmake/Modules/")
+add_subdirectory(core/src)
+add_subdirectory(websockets/src)
+add_subdirectory(src)

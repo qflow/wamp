@@ -6,7 +6,6 @@
 namespace QFlow{
 Helper::Helper()
 {
-
 }
 QJSValue Helper::variantToJS(const QVariant& var, QJSEngine* engine)
 {

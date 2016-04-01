@@ -1,0 +1,4 @@
+find_package(PkgConfig)
+pkg_check_modules(LIBSECRET libsecret-1)
+include(FindPackageHandleStandardArgs)
+FIND_PACKAGE_HANDLE_STANDARD_ARGS(LIBSECRET DEFAULT_MSG LIBSECRET_INCLUDE_DIRS LIBSECRET_LIBRARIES)
