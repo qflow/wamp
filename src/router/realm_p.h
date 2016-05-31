@@ -20,6 +20,7 @@ class WampRouterSubscription;
 typedef QSharedPointer<WampRouterSubscription> WampRouterSubscriptionPointer;
 class Registration;
 typedef QSharedPointer<Registration> RegistrationPointer;
+class TreeModel;
 
 class RealmPrivate
 {

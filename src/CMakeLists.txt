@@ -9,10 +9,10 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DUNICODE)
 endif()
 find_package(MsgPack REQUIRED)
-aux_source_directory(. SRC_LIST)
-aux_source_directory(./client CLIENT_SRC_LIST)
-aux_source_directory(./router ROUTER_SRC_LIST)
-list(APPEND FULL_SRC_LIST ${SRC_LIST} ${CLIENT_SRC_LIST} ${ROUTER_SRC_LIST})
+file(GLOB_RECURSE DATABASE_SRCS
+         RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
+         ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
+         ${CMAKE_CURRENT_SOURCE_DIR}/*.h)
 include_directories(./client ./router ${MSGPACK_INCLUDE_DIRS} ${LIBSECRET_INCLUDE_DIRS})
 # Find includes in corresponding build directories
 set(CMAKE_INCLUDE_CURRENT_DIR ON)
@@ -23,7 +23,7 @@ set(QT_MIN_VERSION "5.6.0")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED Core Qml)
 #find_package(MsgPack REQUIRED)
 
-add_library(wamp SHARED ${FULL_SRC_LIST} qmldir)
+add_library(wamp SHARED ${DATABASE_SRCS} qmldir)
 get_target_property(core_INCLUDE_DIRECTORIES core INCLUDE_DIRECTORIES)
 get_target_property(websockets_INCLUDE_DIRECTORIES websockets INCLUDE_DIRECTORIES)
 include_directories(${core_INCLUDE_DIRECTORIES} ${websockets_INCLUDE_DIRECTORIES})
