@@ -31,7 +31,7 @@ WampConnectionPrivate::~WampConnectionPrivate()
     QVariantList arr{(int)WampMsgCode::GOODBYE, QVariantMap(), "wamp.error.system_shutdown"};
     sendWampMessage(arr);
     QMetaObject::invokeMethod(_worker, "flush", Qt::BlockingQueuedConnection);
-    _socket->close();
+    //_socket->close();
     _workerThread.quit();
     _workerThread.wait();
 }
@@ -172,11 +172,6 @@ void WampConnection::connect()
 {
     Q_D(WampConnection);
     QMetaObject::invokeMethod(d->_worker, "connect", Qt::QueuedConnection);
-}
-void WampConnection::disconnect()
-{
-    Q_D(WampConnection);
-    QMetaObject::invokeMethod(d->_socket.data(), "close", Qt::QueuedConnection);
 }
 
 void WampConnectionPrivate::addRegistration(RegistrationPointer reg)

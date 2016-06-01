@@ -5,6 +5,7 @@
 #include <QHash>
 #include <QSharedPointer>
 #include <QUrl>
+#include <memory>
 
 class QWebSocket;
 
@@ -20,7 +21,7 @@ class WampRouterSubscription;
 typedef QSharedPointer<WampRouterSubscription> WampRouterSubscriptionPointer;
 class Registration;
 typedef QSharedPointer<Registration> RegistrationPointer;
-class TreeModel;
+class TreeItem;
 
 class RealmPrivate
 {

@@ -3,6 +3,7 @@
 #include "wamprouter_p.h"
 #include "authenticator.h"
 #include "random.h"
+#include "treeitem.h"
 
 namespace QFlow{
 
