@@ -60,7 +60,6 @@ public Q_SLOTS:
     Future call(QString uri, const QVariantList& args, QObject* callbackObj, QString callbackMethod);
     void define(QString uri, QString definition);
     Future describe(QString uri);
-    void disconnect();
 Q_SIGNALS:
     void urlChanged();
     void realmChanged();

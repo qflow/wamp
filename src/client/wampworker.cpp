@@ -22,35 +22,31 @@ WampWorker::WampWorker() : QObject(), _timer(new QTimer(this))
 WampWorker::~WampWorker()
 {
     _timer->stop();
-    if(_socketPrivate->_socket)
-    {
-        delete _socketPrivate->_socket;
-    }
 }
 
 void WampWorker::reconnect()
 {
-    _socketPrivate->_socket->connect();
+    connect();
 }
 
 void WampWorker::connect()
 {
-    _socketPrivate->_socket = new WebSocketConnection();
-    _socketPrivate->_socket->setUri(_socketPrivate->_url.url());
-    _socketPrivate->_socket->setRequestedSubprotocols({KEY_WAMP_JSON_SUB, KEY_WAMP_MSGPACK_SUB});
-    QObject::connect(_socketPrivate->_socket.data(), SIGNAL(opened()), this, SLOT(opened()));
-    QObject::connect(_socketPrivate->_socket.data(), SIGNAL(closed()), this, SLOT(closed()));
-    QObject::connect(_socketPrivate->_socket.data(), SIGNAL(messageReceived(QByteArray)), this, SLOT(messageReceived(QByteArray)));
-    _socketPrivate->_socket->connect();
+    _socket.reset(new WebSocketConnection());
+    _socket->setUri(_socketPrivate->_url.url());
+    _socket->setRequestedSubprotocols({KEY_WAMP_JSON_SUB, KEY_WAMP_MSGPACK_SUB});
+    QObject::connect(_socket.get(), SIGNAL(opened()), this, SLOT(opened()));
+    QObject::connect(_socket.get(), SIGNAL(closed()), this, SLOT(closed()));
+    QObject::connect(_socket.get(), SIGNAL(messageReceived(QByteArray)), this, SLOT(messageReceived(QByteArray)));
+    _socket->connect();
 }
 
 void WampWorker::sendTextMessage(const QString &message)
 {
-    _socketPrivate->_socket->sendText(message);
+    _socket->sendText(message);
 }
 void WampWorker::sendBinaryMessage(const QByteArray &message)
 {
-    return _socketPrivate->_socket->sendBinary(message);
+    return _socket->sendBinary(message);
 }
 void WampWorker::closed()
 {
@@ -66,7 +62,7 @@ void WampWorker::flush()
 void WampWorker::opened()
 {
     _timer->stop();
-    QString sub = _socketPrivate->_socket->subprotocol();
+    QString sub = _socket->subprotocol();
     _socketPrivate->_serializer.reset(WampMessageSerializer::create(sub));
     QVariantMap options;
     if(!_socketPrivate->_user)

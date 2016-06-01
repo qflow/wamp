@@ -50,7 +50,6 @@ public:
     QUrl _url;
     QString _realm;
     User* _user;
-    QPointer<WebSocketConnection> _socket;
     QThread _workerThread;
     WampWorker* _worker;
     QScopedPointer<WampMessageSerializer> _serializer;

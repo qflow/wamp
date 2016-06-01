@@ -1,8 +1,11 @@
 #ifndef WAMPWORKER_H
 #define WAMPWORKER_H
 
+#include "websocketconnection.h"
 #include <QObject>
 #include <QTimer>
+#include <memory>
+
 
 namespace QFlow{
 
@@ -15,6 +18,7 @@ public:
     ~WampWorker();
     WampConnectionPrivate* _socketPrivate;
     QTimer* _timer;
+    std::unique_ptr<WebSocketConnection> _socket;
 public Q_SLOTS:
     void connect();
     void messageReceived(const QByteArray & message);
