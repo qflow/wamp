@@ -27,9 +27,10 @@ void TreeModel::setData(WampConnection* connection)
         _connection->subscribe(KEY_REGISTRATION_ON_CREATE, handler);
     });
 }
-void TreeModel::registrationCreated(double /*registrationId*/, QVariantMap args)
+void TreeModel::registrationCreated(double registrationId, QVariantMap args)
 {
-    QList<TreeItem*> itemsAdded = _rootItem->add(args["uri"].toString());
+    QString uri = args["uri"].toString();
+    QList<TreeItem*> itemsAdded = _rootItem->add(uri);
     for(TreeItem* item: itemsAdded) {
         TreeItem* parent = item->parent();
         QModelIndex parentIndex = createIndex(parent->index(), 0, parent);
