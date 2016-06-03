@@ -2,6 +2,7 @@
 #define TREEMODEL_H
 
 #include "wampconnection.h"
+#include "radixtreenode.h"
 #include <QAbstractItemModel>
 
 namespace QFlow{
@@ -33,9 +34,11 @@ public:
 public Q_SLOTS:
     void setData(WampConnection* connection);
 private:
-    void registrationCreated(double subscriptionId, QVariantMap args);
+    void registrationCreated(double sessionId, QVariantMap args);
+    void registrationDeleted(double sessionId, QVariantMap args);
     WampConnection* _connection;
     TreeItem* _rootItem;
+
 };
 }
 #endif // TREEMODEL_H

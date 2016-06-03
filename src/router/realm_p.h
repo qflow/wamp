@@ -1,6 +1,7 @@
 #ifndef REALM_P_H
 #define REALM_P_H
 
+#include "radixtreenode.h"
 #include <QMutex>
 #include <QHash>
 #include <QSharedPointer>
@@ -21,14 +22,16 @@ class WampRouterSubscription;
 typedef QSharedPointer<WampRouterSubscription> WampRouterSubscriptionPointer;
 class Registration;
 typedef QSharedPointer<Registration> RegistrationPointer;
-class TreeItem;
+typedef RadixTreeNode<WampRouterRegistrationPointer> TreeNode;
+typedef RadixTreeNodeList<WampRouterRegistrationPointer> TreeNodeList;
 
 class RealmPrivate
 {
 public:
     QMutex _mutex;
     QString _name;
-    QHash<QString, WampRouterRegistrationPointer> _uriRegistartion;
+    //QHash<QString, WampRouterRegistrationPointer> _uriRegistartion;
+    TreeNode _root;
     QHash<qulonglong, WampRouterRegistrationPointer> _idRegistartion;
     QHash<qulonglong, WampRouterSession*> _pendingInvocations;
     void insertPendingInvocation(qulonglong requestId, WampRouterSession* session);

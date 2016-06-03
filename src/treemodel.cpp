@@ -21,13 +21,17 @@ void TreeModel::setData(WampConnection* connection)
             _rootItem->add(uri);
         }
         endResetModel();
-        std::function<void(double, QVariantMap)> handler = std::bind(&TreeModel::registrationCreated, this,
+        std::function<void(double, QVariantMap)> createHandler = std::bind(&TreeModel::registrationCreated, this,
                                                                      std::placeholders::_1,
                                                                      std::placeholders::_2);
-        _connection->subscribe(KEY_REGISTRATION_ON_CREATE, handler);
+        _connection->subscribe(KEY_REGISTRATION_ON_CREATE, createHandler);
+        std::function<void(double, QVariantMap)> deleteHandler = std::bind(&TreeModel::registrationDeleted, this,
+                                                                     std::placeholders::_1,
+                                                                     std::placeholders::_2);
+        _connection->subscribe(KEY_REGISTRATION_ON_DELETE, deleteHandler);
     });
 }
-void TreeModel::registrationCreated(double registrationId, QVariantMap args)
+void TreeModel::registrationCreated(double, QVariantMap args)
 {
     QString uri = args["uri"].toString();
     QList<TreeItem*> itemsAdded = _rootItem->add(uri);
@@ -38,6 +42,19 @@ void TreeModel::registrationCreated(double registrationId, QVariantMap args)
         beginInsertRows(parentIndex, row, row);
         endInsertRows();
     }
+}
+void TreeModel::registrationDeleted(double, QVariantMap args)
+{
+    QString uri = args["uri"].toString();
+    TreeItem* toRemove = _rootItem->find(uri);
+    if(!toRemove) return;
+    TreeItem* parent = toRemove->parent();
+    QModelIndex parentIndex = createIndex(parent->index(), 0, parent);
+    int rows = rowCount(parentIndex);
+    int row = toRemove->index();
+    beginRemoveRows(parentIndex, row, row);
+    _rootItem->remove(uri);
+    endRemoveRows();
 }
 
 QModelIndex TreeModel::index(int row, int column, const QModelIndex &parent)

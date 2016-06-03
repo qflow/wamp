@@ -21,7 +21,7 @@ Realm::Realm(QObject *parent) : WampBase(parent), d_ptr(new RealmPrivate())
     registerMethod(KEY_LIST_REGISTRATION_URIS, this, "registeredUris()");
     registerMethod("wamp.registration.list", this, "registrationIds()");
     registerMethod("wamp.registration.list_internal_uris", this, "registeredInternalUris()");
-
+    registerMethod("wamp.list_children_keys", this, "childrenKeys(QString)");
     registerMethod("wamp.subscription.count_subscribers", this, "subscribersCount(QString)");
     registerProcedure(KEY_GET_SUBSCRIPTION, [this](QVariantList args){//register some object
         qulonglong subscriptionId = (qulonglong)args[0].toDouble();
@@ -40,10 +40,11 @@ Realm::Realm(QObject *parent) : WampBase(parent), d_ptr(new RealmPrivate())
     });
     registerProcedure(KEY_LOOKUP_REGISTRATION, [this](QVariantList args){
         QString uri = args[0].toString();
-        if(!this->d_ptr->_uriRegistartion.contains(uri)) return WampResult();
-        WampRouterRegistrationPointer registration = this->d_ptr->_uriRegistartion[uri];
+        if(!this->d_ptr->_root.containsGenuine(uri)) return WampResult();
+        WampRouterRegistrationPointer registration = this->d_ptr->_root.findData(uri);
         return WampResult(QVariant(registration->registrationId()));
     });
+
 }
 Realm::~Realm()
 {
@@ -82,14 +83,21 @@ bool Realm::containsRegistration(QString uri)
 {
     Q_D(Realm);
     QMutexLocker lock(&d->_mutex);
-    return d->_uriRegistartion.contains(uri);
+    return d->_root.containsGenuine(uri);
 }
 QStringList Realm::registeredUris()
 {
     Q_D(Realm);
     QMutexLocker lock(&d->_mutex);
-    return d->_uriRegistartion.keys();
+    return d->_root.genuineUris();
 }
+QStringList Realm::childrenKeys(QString uri)
+{
+    Q_D(Realm);
+    QMutexLocker lock(&d->_mutex);
+    return d->_root.childrenKeys(uri);
+}
+
 QStringList Realm::registeredInternalUris()
 {
     Q_D(Realm);
@@ -145,7 +153,7 @@ int Realm::subscribersCount(QString topicUri)
 void RealmPrivate::insertRegistration(QString uri, WampRouterRegistrationPointer registration)
 {
     QMutexLocker lock(&_mutex);
-    _uriRegistartion[uri] = registration;
+    _root.add(uri, registration);
     _idRegistartion.insert(registration->registrationId(), registration);
 }
 WampRouterRegistrationPointer RealmPrivate::getRegistration(qulonglong registrationId)
@@ -156,15 +164,21 @@ WampRouterRegistrationPointer RealmPrivate::getRegistration(qulonglong registrat
 WampRouterRegistrationPointer RealmPrivate::getRegistration(QString uri)
 {
     QMutexLocker lock(&_mutex);
-    return _uriRegistartion[uri];
+    return _root.findData(uri);
 }
 
 void RealmPrivate::removeRegistration(WampRouterRegistrationPointer reg)
 {
     QMutexLocker lock(&_mutex);
-    _uriRegistartion.remove(reg->uri());
+    _root.remove(reg->uri());
     _idRegistartion.remove(reg->registrationId());
-    publish(KEY_REGISTRATION_ON_DELETE, {reg->callee()->sessionId(), reg->registrationId()});
+    QVariantList onDeleteArgs{reg->callee()->sessionId()};
+    QVariantMap details;
+    details["id"] = reg->registrationId();
+    details["created"] = reg->created().toString("yyyy-mm-ddThh:mm:zzzZ");
+    details["uri"] = reg->uri();
+    onDeleteArgs.append(details);
+    publish(KEY_REGISTRATION_ON_DELETE, onDeleteArgs);
 }
 void RealmPrivate::insertPendingInvocation(qulonglong requestId, WampRouterSession *session)
 {

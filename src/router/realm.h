@@ -13,6 +13,7 @@ namespace QFlow{
 class Authenticator;
 class Role;
 class RealmPrivate;
+
 class WAMP_EXPORT Realm : public WampBase
 {
     Q_OBJECT
@@ -34,6 +35,7 @@ public Q_SLOTS:
     QStringList registeredUris();
     QStringList registeredInternalUris();
     QVariantList registrationIds();
+    QStringList childrenKeys(QString uri);
     qulonglong publish(QString topic, const QVariantList& args);
     int subscribersCount(QString topicUri);
 protected:
