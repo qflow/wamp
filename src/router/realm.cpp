@@ -120,7 +120,7 @@ void Realm::addRegistration(RegistrationPointer reg)
     Q_D(Realm);
     d->_internalRegistrations.insert(reg->uri(), reg);
 }
-void Realm::addSignalObserver(QString /*uri*/, SignalObserver* /*observer*/)
+void Realm::addSignalObserver(QString /*uri*/, SignalObserverPointer /*observer*/)
 {
 
 }

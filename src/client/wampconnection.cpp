@@ -96,7 +96,7 @@ void WampConnectionPrivate::sendWampMessage(const QVariantList &arr)
     }
     else
     {
-        _worker->sendTextMessage(message);
+       _worker->sendTextMessage(message);
     }
 }
 
@@ -113,14 +113,14 @@ void WampConnectionPrivate::onConnected()
                          QString topicUri = info["uri"].toString();
                          Q_EMIT q->subscriptionCreated(topicUri);
                          if(!_topicObserver.contains(topicUri)) return;
-                         SignalObserver* so = _topicObserver[topicUri];
+                         SignalObserverPointer so = _topicObserver[topicUri];
                          so->setEnabled(true);
                      }});
     q->subscribe(KEY_SUBSCRIPTION_ON_DELETE, std::function<void(double, double, QString)>{
                      [q, this](double, double, QString topic){
                          Q_EMIT q->subscriptionDeleted(topic);
                          if(!_topicObserver.contains(topic)) return;
-                         SignalObserver* so = _topicObserver[topic];
+                         SignalObserverPointer so = _topicObserver[topic];
                          so->setEnabled(false);
                      }});
     Q_EMIT q->connected();
@@ -326,15 +326,19 @@ void WampConnection::unsubscribe(QString uri)
     qulonglong subscriptionId = d->_uriSubscription[uri]->subscriptionId();
     unsubscribe(subscriptionId);
 }
-void WampConnection::addSignalObserver(QString uri, SignalObserver *observer)
+void WampConnection::addSignalObserver(QString uri, SignalObserverPointer observer)
 {
     Q_D(WampConnection);
+    if(d->_topicObserver.contains(uri))
+    {
+        int i=0;
+    }
     d->_topicObserver[uri] = observer;
     subscribersCount(uri, [observer](const QVariant& result){
         int count = result.toInt();
         observer->setEnabled(count > 0);
     });
-    QObject::connect(observer, &SignalObserver::signalEmitted, [this, uri](QVariantList args){
+    QObject::connect(observer.get(), &SignalObserver::signalEmitted, [this, uri](QVariantList args){
         publish(uri, args);
     });
 }

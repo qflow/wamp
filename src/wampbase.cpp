@@ -87,7 +87,7 @@ void WampBase::registerProcedure(QString uri, QJSValue callback)
 }
 void WampBase::registerSignal(QString uri, QObject *obj, QString signalSignature, bool enabled)
 {
-    SignalObserver* observer = new SignalObserver(obj, signalSignature.toUtf8(), enabled);
+    SignalObserverPointer observer = std::make_shared<SignalObserver>(obj, signalSignature.toUtf8(), enabled);
     addSignalObserver(uri, observer);
 }
 
@@ -101,7 +101,7 @@ void WampBase::registerObject(QString uri, QObject *obj)
     {
         QMetaMethod method = meta->method(i);
         if(method.access() != QMetaMethod::Public ||
-                method.name() == "deleteLater") continue;
+                method.name() == "deleteLater" || method.name() == "destroyed") continue;
         QString methodName = method.name();
         QString methodUri(QString("%1.%2").arg(uri).arg(methodName));
         if(method.methodType() == QMetaMethod::Slot) registerMethod(methodUri, obj, method);

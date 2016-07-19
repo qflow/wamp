@@ -1,6 +1,7 @@
 #ifndef WAMPBASE_H
 #define WAMPBASE_H
 
+#include "signalobserver.h"
 #include "functor.h"
 #include "registration_p.h"
 #include "wampattached.h"
@@ -47,7 +48,7 @@ public Q_SLOTS:
     void registerSignal(QString uri, QObject* obj, QString signalSignature, bool enabled = true);
 protected:
     virtual void addRegistration(RegistrationPointer reg) = 0;
-    virtual void addSignalObserver(QString uri, SignalObserver* observer) = 0;
+    virtual void addSignalObserver(QString uri, SignalObserverPointer observer) = 0;
 };
 }
 //QML_DECLARE_TYPE( QFlow::WampBase )

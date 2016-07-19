@@ -51,7 +51,12 @@ void WampWorker::sendBinaryMessage(const QByteArray &message)
 void WampWorker::closed()
 {
     qDebug() << "WampConnection: WebSocket closed";
+    for(auto observer: _socketPrivate->_topicObserver.values())
+    {
+        observer->setEnabled(false);
+    }
     Q_EMIT _socketPrivate->q_ptr->disconnected();
+
     _timer->start();
 }
 void WampWorker::flush()

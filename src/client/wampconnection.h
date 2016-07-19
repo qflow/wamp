@@ -1,6 +1,7 @@
 #ifndef WAMPCONNECTION_H
 #define WAMPCONNECTION_H
 
+#include "signalobserver.h"
 #include "wamp_global.h"
 #include "wampbase.h"
 #include "subscription_p.h"
@@ -73,7 +74,7 @@ Q_SIGNALS:
 private:
     void addRegistration(RegistrationPointer reg);
     void addSubscription(SubscriptionPointer sub);
-    void addSignalObserver(QString uri, SignalObserver* observer);
+    void addSignalObserver(QString uri, SignalObserverPointer observer);
     const QScopedPointer<WampConnectionPrivate> d_ptr;
     Q_DECLARE_PRIVATE(WampConnection)
 };
