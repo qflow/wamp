@@ -11,6 +11,7 @@
 #include <QUrl>
 #include <QObject>
 #include <QQmlListReference>
+#include <memory>
 
 
 namespace QFlow{
@@ -75,9 +76,8 @@ private:
     void addRegistration(RegistrationPointer reg);
     void addSubscription(SubscriptionPointer sub);
     void addSignalObserver(QString uri, SignalObserverPointer observer);
-    const QScopedPointer<WampConnectionPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(WampConnection)
+    const std::unique_ptr<WampConnectionPrivate> d_ptr;
 };
-typedef QSharedPointer<WampConnection> WampConnectionPointer;
+typedef std::shared_ptr<WampConnection> WampConnectionPointer;
 }
 #endif // WAMPCONNECTION_H
