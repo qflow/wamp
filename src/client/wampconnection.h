@@ -1,6 +1,7 @@
 #ifndef WAMPCONNECTION_H
 #define WAMPCONNECTION_H
 
+#include "signalobserver.h"
 #include "wamp_global.h"
 #include "wampbase.h"
 #include "subscription_p.h"
@@ -10,6 +11,7 @@
 #include <QUrl>
 #include <QObject>
 #include <QQmlListReference>
+#include <memory>
 
 
 namespace QFlow{
@@ -73,10 +75,9 @@ Q_SIGNALS:
 private:
     void addRegistration(RegistrationPointer reg);
     void addSubscription(SubscriptionPointer sub);
-    void addSignalObserver(QString uri, SignalObserver* observer);
-    const QScopedPointer<WampConnectionPrivate> d_ptr;
-    Q_DECLARE_PRIVATE(WampConnection)
+    void addSignalObserver(QString uri, SignalObserverPointer observer);
+    const std::unique_ptr<WampConnectionPrivate> d_ptr;
 };
-typedef QSharedPointer<WampConnection> WampConnectionPointer;
+typedef std::shared_ptr<WampConnection> WampConnectionPointer;
 }
 #endif // WAMPCONNECTION_H

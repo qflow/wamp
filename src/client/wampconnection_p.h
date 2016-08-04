@@ -1,6 +1,7 @@
 #ifndef WAMPCONNECTION_P_H
 #define WAMPCONNECTION_P_H
 
+#include "signalobserver.h"
 #include "jsonhelper.h"
 #include "registration_p.h"
 #include "subscription_p.h"
@@ -37,7 +38,6 @@ public:
 
 class User;
 class WampConnection;
-class SignalObserver;
 class WampMessageSerializer;
 class WampConnectionPrivate : public QObject
 {
@@ -58,7 +58,7 @@ public:
     QHash<qulonglong,RegistrationPointer> _registrations;
     QHash<QString,RegistrationPointer> _uriRegistration;
     QHash<qulonglong,CallPointer> _pendingCalls;
-    QHash<QString, SignalObserver*> _topicObserver;
+    QHash<QString, SignalObserverPointer> _topicObserver;
 
     QHash<qulonglong,SubscriptionPointer> _pendingSubscriptions;
     QHash<qulonglong,SubscriptionPointer> _pendingUnsubscriptions;

@@ -96,7 +96,7 @@ void WampConnectionPrivate::sendWampMessage(const QVariantList &arr)
     }
     else
     {
-        _worker->sendTextMessage(message);
+       _worker->sendTextMessage(message);
     }
 }
 
@@ -113,14 +113,14 @@ void WampConnectionPrivate::onConnected()
                          QString topicUri = info["uri"].toString();
                          Q_EMIT q->subscriptionCreated(topicUri);
                          if(!_topicObserver.contains(topicUri)) return;
-                         SignalObserver* so = _topicObserver[topicUri];
+                         SignalObserverPointer so = _topicObserver[topicUri];
                          so->setEnabled(true);
                      }});
     q->subscribe(KEY_SUBSCRIPTION_ON_DELETE, std::function<void(double, double, QString)>{
                      [q, this](double, double, QString topic){
                          Q_EMIT q->subscriptionDeleted(topic);
                          if(!_topicObserver.contains(topic)) return;
-                         SignalObserver* so = _topicObserver[topic];
+                         SignalObserverPointer so = _topicObserver[topic];
                          so->setEnabled(false);
                      }});
     Q_EMIT q->connected();
@@ -136,42 +136,35 @@ WampConnection::~WampConnection()
 }
 QUrl WampConnection::url() const
 {
-    Q_D(const WampConnection);
-    return d->_url;
+    return d_ptr->_url;
 }
 void WampConnection::setUrl(QUrl value)
 {
-    Q_D(WampConnection);
-    d->_url = value;
+    d_ptr->_url = value;
     Q_EMIT urlChanged();
 }
 QString WampConnection::realm() const
 {
-    Q_D(const WampConnection);
-    return d->_realm;
+    return d_ptr->_realm;
 }
 void WampConnection::setRealm(QString realm)
 {
-    Q_D(WampConnection);
-    d->_realm = realm;
+    d_ptr->_realm = realm;
     Q_EMIT realmChanged();
 }
 User* WampConnection::user() const
 {
-    Q_D(const WampConnection);
-    return d->_user;
+    return d_ptr->_user;
 }
 void WampConnection::setUser(User* value)
 {
-    Q_D(WampConnection);
-    d->_user = value;
+    d_ptr->_user = value;
     Q_EMIT userChanged();
 }
 
 void WampConnection::connect()
 {
-    Q_D(WampConnection);
-    QMetaObject::invokeMethod(d->_worker, "connect", Qt::QueuedConnection);
+    QMetaObject::invokeMethod(d_ptr->_worker, "connect", Qt::QueuedConnection);
 }
 
 void WampConnectionPrivate::addRegistration(RegistrationPointer reg)
@@ -190,45 +183,39 @@ void WampConnectionPrivate::addSubscription(SubscriptionPointer sub)
 }
 void WampConnection::addRegistration(RegistrationPointer reg)
 {
-    Q_D(WampConnection);
-    d->addRegistration(reg);
+    d_ptr->addRegistration(reg);
 }
 void WampConnection::addSubscription(SubscriptionPointer sub)
 {
-    Q_D(WampConnection);
-    d->addSubscription(sub);
+    d_ptr->addSubscription(sub);
 }
 void WampConnection::unregister(qulonglong registrationId)
 {
-    Q_D(WampConnection);
     qulonglong requestId = Random::generate();
     QVariantList arr{(int)WampMsgCode::UNREGISTER, requestId, registrationId};
 
-    RegistrationPointer reg = d->_registrations.take(registrationId);
-    d->_pendingUnregistrations[requestId] = reg;
-    d->sendWampMessage(arr);
+    RegistrationPointer reg = d_ptr->_registrations.take(registrationId);
+    d_ptr->_pendingUnregistrations[requestId] = reg;
+    d_ptr->sendWampMessage(arr);
 }
 void WampConnection::unsubscribe(qulonglong subscriptionId)
 {
-    Q_D(WampConnection);
     qulonglong requestId = Random::generate();
     QVariantList arr{(int)WampMsgCode::UNSUBSCRIBE, requestId, subscriptionId};
 
-    SubscriptionPointer sub = d->_subscriptions.take(subscriptionId);
-    d->_pendingUnsubscriptions[requestId] = sub;
-    d->sendWampMessage(arr);
+    SubscriptionPointer sub = d_ptr->_subscriptions.take(subscriptionId);
+    d_ptr->_pendingUnsubscriptions[requestId] = sub;
+    d_ptr->sendWampMessage(arr);
 }
 void WampConnection::subscribe(QString uri, QJSValue callback)
 {
-    Q_D(WampConnection);
     SubscriptionPointer sub(new JSSubscription(uri, callback));
-    d->addSubscription(sub);
+    d_ptr->addSubscription(sub);
 }
 void WampConnection::subscribe(QString uri, QObject *obj, QString method)
 {
-    Q_D(WampConnection);
     SubscriptionPointer sub(new MethodSubscription(uri, obj, method));
-    d->addSubscription(sub);
+    d_ptr->addSubscription(sub);
 }
 void WampConnectionPrivate::call(QString uri, const QVariantList &args, CallPointer call)
 {
@@ -240,25 +227,22 @@ void WampConnectionPrivate::call(QString uri, const QVariantList &args, CallPoin
 
 Future WampConnection::call(QString uri, const QVariantList& args, const QJSValue& callback)
 {
-    Q_D(WampConnection);
     Impl* impl = NULL;
     if(callback.isCallable()) impl = new JSImpl(callback);
     CallPointer call(new Call(impl, this), CallDeleter());
-    d->call(uri, args, call);
+    d_ptr->call(uri, args, call);
     return call->getFuture();
 }
 Future WampConnection::call(QString uri, const QVariantList &args, QObject *callbackObj, QString callbackMethod)
 {
-    Q_D(WampConnection);
     Impl* impl = new MethodImpl(callbackObj, callbackMethod);
     CallPointer call(new Call(impl), CallDeleter());
-    d->call(uri, args, call);
+    d_ptr->call(uri, args, call);
     return call->getFuture();
 }
 
 Future WampConnection::call2(QString uri, const QVariantList& args, ResultCallback callback)
 {
-    Q_D(WampConnection);
     Impl* impl = NULL;
     if(callback)
     {
@@ -266,16 +250,15 @@ Future WampConnection::call2(QString uri, const QVariantList& args, ResultCallba
         impl = new FunctorImpl(functor);
     }
     CallPointer call(new Call(impl), CallDeleter());
-    d->call(uri, args, call);
+    d_ptr->call(uri, args, call);
     return call->getFuture();
 }
 
 void WampConnection::publish(QString uri, const QVariantList& args)
 {
-    Q_D(WampConnection);
     qulonglong requestId = Random::generate();
     QVariantList arr{(int)WampMsgCode::PUBLISH, requestId, QVariantMap(), uri, args};
-    d->sendWampMessage(arr);
+    d_ptr->sendWampMessage(arr);
 }
 void WampConnection::define(QString uri, QString definition)
 {
@@ -306,35 +289,32 @@ Future WampConnection::subscribersCount(QString topicUri, ResultCallback callbac
 
 void WampConnection::unregister(QString uri)
 {
-    Q_D(WampConnection);
-    if(!d->_uriRegistration.contains(uri))
+    if(!d_ptr->_uriRegistration.contains(uri))
     {
         qWarning() << QString("Cannot unregister not existing registration %1").arg(uri);
         return;
     }
-    qulonglong registrationId = d->_uriRegistration[uri]->registrationId();
+    qulonglong registrationId = d_ptr->_uriRegistration[uri]->registrationId();
     unregister(registrationId);
 }
 void WampConnection::unsubscribe(QString uri)
 {
-    Q_D(WampConnection);
-    if(!d->_uriSubscription.contains(uri))
+    if(!d_ptr->_uriSubscription.contains(uri))
     {
         qWarning() << QString("Cannot unsubscribe from not existing subscription %1").arg(uri);
         return;
     }
-    qulonglong subscriptionId = d->_uriSubscription[uri]->subscriptionId();
+    qulonglong subscriptionId = d_ptr->_uriSubscription[uri]->subscriptionId();
     unsubscribe(subscriptionId);
 }
-void WampConnection::addSignalObserver(QString uri, SignalObserver *observer)
+void WampConnection::addSignalObserver(QString uri, SignalObserverPointer observer)
 {
-    Q_D(WampConnection);
-    d->_topicObserver[uri] = observer;
+    d_ptr->_topicObserver[uri] = observer;
     subscribersCount(uri, [observer](const QVariant& result){
         int count = result.toInt();
         observer->setEnabled(count > 0);
     });
-    QObject::connect(observer, &SignalObserver::signalEmitted, [this, uri](QVariantList args){
+    QObject::connect(observer.get(), &SignalObserver::signalEmitted, [this, uri](QVariantList args){
         publish(uri, args);
     });
 }

@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 2.8.11)
+include(ExternalProject)
 project(wamp)
 add_definitions(-DWAMP_LIBRARY -DQT_NO_KEYWORDS -DSECRET_WITH_UNSTABLE -DUNICODE)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Linux")
@@ -9,6 +10,20 @@ if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DUNICODE)
 endif()
 find_package(MsgPack REQUIRED)
+if(MsgPack_FOUND)
+else()
+    ExternalProject_Add(
+      msgpack
+      GIT_REPOSITORY "https://github.com/msgpack/msgpack-c.git"
+      GIT_TAG "master"
+      PREFIX msgpack
+      UPDATE_COMMAND ""
+      PATCH_COMMAND ""
+      CMAKE_ARGS -DMSGPACK_CXX11=ON -DCMAKE_INSTALL_PREFIX=install
+      TEST_COMMAND ""
+    )
+    set(MSGPACK_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/masgpack/src/msgpack-build/install/include)
+endif()
 file(GLOB_RECURSE DATABASE_SRCS
          RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
          ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
@@ -21,7 +36,6 @@ set(CMAKE_AUTOMOC ON)
 
 set(QT_MIN_VERSION "5.6.0")
 find_package(Qt5 ${QT_MIN_VERSION} CONFIG REQUIRED Core Qml)
-#find_package(MsgPack REQUIRED)
 
 add_library(wamp SHARED ${DATABASE_SRCS} qmldir)
 get_target_property(core_INCLUDE_DIRECTORIES core INCLUDE_DIRECTORIES)

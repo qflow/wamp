@@ -40,7 +40,7 @@ public Q_SLOTS:
     int subscribersCount(QString topicUri);
 protected:
     void addRegistration(RegistrationPointer reg);
-    void addSignalObserver(QString uri, SignalObserver* observer);
+    void addSignalObserver(QString uri, SignalObserverPointer observer);
 private:
     const QScopedPointer<RealmPrivate> d_ptr;
     Q_DECLARE_PRIVATE(Realm)
