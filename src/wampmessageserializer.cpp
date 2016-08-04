@@ -2,7 +2,7 @@
 #include "wamp_symbols.h"
 #include <QJsonDocument>
 #include <QJsonArray>
-#include "msgpack.hpp"
+#include <msgpack.hpp>
 #include <sstream>
 #include <QDebug>
 #include <QDateTime>

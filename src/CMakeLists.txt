@@ -9,8 +9,8 @@ endif()
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     add_definitions(-DUNICODE)
 endif()
-find_package(MsgPack REQUIRED)
-if(MsgPack_FOUND)
+find_package(msgpack QUIET)
+if(msgpack_FOUND)
 else()
     ExternalProject_Add(
       msgpack
@@ -22,7 +22,8 @@ else()
       CMAKE_ARGS -DMSGPACK_CXX11=ON -DCMAKE_INSTALL_PREFIX=install
       TEST_COMMAND ""
     )
-    set(MSGPACK_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/masgpack/src/msgpack-build/install/include)
+    set(MSGPACK_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/msgpack/src/msgpack-build/install/include)
+    message(STATUS "MsgPack: " ${MSGPACK_INCLUDE_DIRS})
 endif()
 file(GLOB_RECURSE DATABASE_SRCS
          RELATIVE ${CMAKE_CURRENT_SOURCE_DIR}
@@ -42,7 +43,7 @@ get_target_property(core_INCLUDE_DIRECTORIES core INCLUDE_DIRECTORIES)
 get_target_property(websockets_INCLUDE_DIRECTORIES websockets INCLUDE_DIRECTORIES)
 include_directories(${core_INCLUDE_DIRECTORIES} ${websockets_INCLUDE_DIRECTORIES})
 set_property(TARGET wamp PROPERTY CXX_STANDARD 14)
-add_dependencies(wamp core websockets)
+add_dependencies(wamp core websockets msgpack)
 if(${CMAKE_SYSTEM_NAME} MATCHES "Windows")
     set(ADDITIONAL_LIBS ${ADDITIONAL_LIBS} Advapi32 Secur32)
 endif()
