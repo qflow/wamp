@@ -1,6 +1,6 @@
 [submodule "core"]
 	path = core
-	url = git@github.com:qflow/core.git
+	url = ../core.git
 [submodule "websockets"]
 	path = websockets
-	url = git@github.com:qflow/websockets.git
+	url = ../websockets.git
