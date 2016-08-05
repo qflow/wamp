@@ -1,3 +1,4 @@
+[![Build Status](https://travis-ci.org/qflow/wamp.svg)](https://travis-ci.org/qflow/wamp)
 # Introduction
 [Router](src/client/README.md)
 # Get sources
