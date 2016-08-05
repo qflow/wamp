@@ -1,0 +1,14 @@
+sudo: required
+dist: trusty
+language: cpp
+compiler:
+  - gcc
+before_install:
+  - sudo add-apt-repository ppa:beineri/opt-qt57-trusty -y
+  - sudo apt-get update -q
+  - sudo apt-get install qt-latest -y
+  - source /opt/qt57/bin/qt57-env.sh
+script:
+  - mkdir build
+  - cd build
+  - cmake .. && make
