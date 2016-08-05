@@ -8,6 +8,7 @@ before_install:
   - sudo apt-get update -q
   - sudo apt-get install qt-latest -y
   - source /opt/qt57/bin/qt57-env.sh
+  - sudo apt-get install libsecret-1-dev -y
 script:
   - mkdir build
   - cd build
