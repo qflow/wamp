@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.4)
+cmake_minimum_required(VERSION 2.8.11)
 project(wamp)
 set(CMAKE_PREFIX_PATH "$ENV{QTDIR}/lib/cmake")
 set(CMAKE_INSTALL_PREFIX "install")
