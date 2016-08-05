@@ -8,8 +8,9 @@
     git submodule foreach git checkout master
 
 # Build
-    qbs --recursive wamp
-    make
+    Use CMake
+
+    open main CMakeLists.txt in QtCreator
     
 # Client
 ## QML
