@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.org/qflow/wamp.svg)](https://travis-ci.org/qflow/wamp)
+[![Build Status](https://travis-ci.org/qflow/wamp.svg)](https://travis-ci.org/qflow/wamp) [![Build status](https://ci.appveyor.com/api/projects/status/qgqb6o8u4dc16hpe?svg=true)](https://ci.appveyor.com/project/mfojtak/wamp)
+
+
 # Introduction
 [Router](src/client/README.md)
 # Get sources
