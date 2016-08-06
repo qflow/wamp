@@ -1,0 +1,17 @@
+platform:
+  - x64
+configuration:
+  - Release
+environment:
+  QTDIR: C:\Qt\5.7\msvc2015_64
+install:
+  - git submodule update --init --remote
+  - git submodule foreach git pull origin master
+  - git submodule foreach git checkout master
+build:
+  project: wamp.sln
+before_build:
+  - cd c:\projects\wamp
+  - cmake -G "Visual Studio 14 2015 Win64"
+after_build:
+  - dir
