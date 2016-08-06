@@ -22,7 +22,7 @@ else()
       CMAKE_ARGS -DMSGPACK_CXX11=ON -DCMAKE_INSTALL_PREFIX=install
       TEST_COMMAND ""
     )
-    set(MSGPACK_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/msgpack/src/msgpack-build/install/include) ${PROJECT_BINARY_DIR}/msgpack/src/msgpack/install/include)
+    set(MSGPACK_INCLUDE_DIRS ${PROJECT_BINARY_DIR}/msgpack/src/msgpack-build/install/include ${PROJECT_BINARY_DIR}/msgpack/src/msgpack/install/include)
     message(STATUS "MsgPack: " ${MSGPACK_INCLUDE_DIRS})
 endif()
 file(GLOB_RECURSE DATABASE_SRCS
