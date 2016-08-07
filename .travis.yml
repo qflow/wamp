@@ -3,6 +3,11 @@ dist: trusty
 language: cpp
 compiler:
   - gcc
+#env: GCC_VERSION=5
+addons:
+  apt:
+    packages:
+      - g++-5
 before_install:
   - sudo add-apt-repository ppa:beineri/opt-qt57-trusty -y
   - sudo apt-get update -q
