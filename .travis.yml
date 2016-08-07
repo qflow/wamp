@@ -1,21 +1,18 @@
 sudo: required
 dist: trusty
 language: cpp
-compiler:
-  - gcc
-env: GCC_VERSION=5
+env: GCC_VERSION=5 CPP=11
 addons:
   apt:
     packages:
       - g++-5
+      - libsecret-1-dev
+      - qt-latest
     sources:
       - ubuntu-toolchain-r-test
+      - beineri/opt-qt57-trusty
 before_install:
-  - sudo add-apt-repository ppa:beineri/opt-qt57-trusty -y
-  - sudo apt-get update -q
-  - sudo apt-get install qt-latest -y
   - source /opt/qt57/bin/qt57-env.sh
-  - sudo apt-get install libsecret-1-dev -y
 script:
   - mkdir build
   - cd build
