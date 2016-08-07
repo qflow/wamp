@@ -3,7 +3,7 @@ dist: trusty
 language: cpp
 compiler:
   - gcc
-#env: GCC_VERSION=5
+env: GCC_VERSION=5
 addons:
   apt:
     packages:
