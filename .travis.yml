@@ -3,9 +3,7 @@ dist: trusty
 language: cpp
 compiler: gcc
 env:
-  - COMPILER=g++-5
-  - CXX=g++-5
-  - CC=gcc-5
+  - COMPILER=g++-5 CXX=g++-5 CC=gcc-5
 addons:
   apt:
     packages:
