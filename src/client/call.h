@@ -16,10 +16,8 @@ public:
     ~Call();
     void resultReady(QVariant res);
     Future getFuture();
-public Q_SLOTS:
-    void resultReadyInternal(QVariant res);
-Q_SIGNALS:
-    void result(QVariant res);
+    Q_SLOT void resultReadyInternal(QVariant res);
+    Q_SIGNAL void result(QVariant res);
 private:
     QScopedPointer<Impl> _callback;
     std::promise<QVariant> _promise;
