@@ -24,8 +24,6 @@ public:
     QString authMethod() const;
 protected:
     WampCraUser(WampCraUserPrivate &dd, QObject *parent);
-private:
-    Q_DECLARE_PRIVATE(WampCraUser)
 };
 }
 #endif // WAMPCRAUSER_H

@@ -27,30 +27,25 @@ User::~User()
 
 QString User::name() const
 {
-    Q_D(const User);
-    return d->_name;
+    return d_ptr->_name;
 }
 void User::setName(QString value)
 {
-    Q_D(User);
-    d->_name = value;
+    d_ptr->_name = value;
 }
 
 Role* User::role() const
 {
-    Q_D(const User);
-    return d->_role;
+    return d_ptr->_role;
 }
 void User::setRole(Role* role)
 {
-    Q_D(User);
-    d->_role = role;
+    d_ptr->_role = role;
 }
 
 bool User::authorize(QString uri, WampMsgCode action)
 {
-    Q_D(User);
-    return d->_role->authorizer()->authorize(d->_name, uri, action);
+    return d_ptr->_role->authorizer()->authorize(d_ptr->_name, uri, action);
 }
 }
 

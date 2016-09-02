@@ -22,6 +22,11 @@ Authenticator::Authenticator(QObject *parent) : QObject(parent)
 {
 
 }
+Authenticator::~Authenticator()
+{
+
+}
+
 void Authenticator::users_append(QQmlListProperty<QFlow::User> *prop, User *item)
 {
     Authenticator* auth = static_cast<Authenticator*>(prop->object);
@@ -57,5 +62,22 @@ bool Authenticator::containsUser(QString userName) const
 User* Authenticator::user(QString userName) const
 {
     return _users[userName];
+}
+QVariantMap Authenticator::generateChallenge(qulonglong /*sessionId*/, QString /*authId*/)
+{
+    return QVariantMap();
+}
+
+QString Authenticator::authMethod() const
+{
+    return QString();
+}
+AuthSession* Authenticator::createSession() const
+{
+    return nullptr;
+}
+User* Authenticator::getUser(AuthSession* /*session*/)
+{
+   return nullptr;
 }
 }

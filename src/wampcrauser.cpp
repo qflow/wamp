@@ -30,7 +30,7 @@ WampCraUser::WampCraUser(WampCraUserPrivate &dd, QObject *parent) : User(dd, par
 
 WampCraUser::WampCraUser(QString name, QString secret, QObject* parent) : User(*new WampCraUserPrivate, parent)
 {
-    Q_D(WampCraUser);
+    auto d = static_cast<WampCraUserPrivate*>(d_ptr.get());
     d->_secret = secret;
     setName(name);
 }
@@ -41,12 +41,12 @@ WampCraUser::~WampCraUser()
 }
 QString WampCraUser::secret() const
 {
-    Q_D(const WampCraUser);
+    auto d = static_cast<WampCraUserPrivate*>(d_ptr.get());
     return d->_secret;
 }
 void WampCraUser::setSecret(QString value)
 {
-    Q_D(WampCraUser);
+    auto d = static_cast<WampCraUserPrivate*>(d_ptr.get());
     d->_secret = value;
 }
 QString WampCraUser::authMethod() const
@@ -55,7 +55,7 @@ QString WampCraUser::authMethod() const
 }
 QByteArray WampCraUser::response(QByteArray challenge)
 {
-    Q_D(WampCraUser);
+    auto d = static_cast<WampCraUserPrivate*>(d_ptr.get());
     QMessageAuthenticationCode hash(QCryptographicHash::Sha256);
     CredentialStore store;
     QString secret = d->_secret;

@@ -41,95 +41,98 @@ public:
     HANDLE _secToken;
     SecPkgContext_Names  _names;
 #endif
-    GSSAPISession(QString authMethod) : _authMethod(authMethod), _first(true)
-    {
+    GSSAPISession(QString authMethod);
+    ~GSSAPISession();
+    QVariant securityToken() const;
+    AUTH_RESULT authenticate();
+};
+
+GSSAPISession::GSSAPISession(QString authMethod) : _authMethod(authMethod), _first(true)
+{
 #ifdef Q_OS_WIN
-        SECURITY_STATUS status;
+    SECURITY_STATUS status;
 
-        LPWSTR methodName = new WCHAR[_authMethod.length()+1];
-        _authMethod.toWCharArray(methodName);
-        methodName[_authMethod.length()] = 0;
-        status = QuerySecurityPackageInfo(methodName, &_info);
-        TimeStamp serverLifetime;
-        status = AcquireCredentialsHandle(NULL, methodName, SECPKG_CRED_BOTH, NULL, NULL, NULL, NULL, &_serverHandle, &serverLifetime);
+    LPWSTR methodName = new WCHAR[_authMethod.length()+1];
+    _authMethod.toWCharArray(methodName);
+    methodName[_authMethod.length()] = 0;
+    status = QuerySecurityPackageInfo(methodName, &_info);
+    TimeStamp serverLifetime;
+    status = AcquireCredentialsHandle(NULL, methodName, SECPKG_CRED_BOTH, NULL, NULL, NULL, NULL, &_serverHandle, &serverLifetime);
 
-        _outSecBufDesc.ulVersion = 0;
-        _outSecBufDesc.cBuffers = 1;
-        _outSecBufDesc.pBuffers = &_outSecBuf;
-        _outSecBuf.cbBuffer = _info->cbMaxToken;
-        _outSecBuf.BufferType = SECBUFFER_TOKEN;
-        _outSecBuf.pvBuffer = (PBYTE) malloc (_info->cbMaxToken);
-        _inSecBufDesc.ulVersion = 0;
-        _inSecBufDesc.cBuffers = 1;
-        _inSecBufDesc.pBuffers = &_inSecBuf;
-        _inSecBuf.BufferType = SECBUFFER_TOKEN;
-        delete methodName;
+    _outSecBufDesc.ulVersion = 0;
+    _outSecBufDesc.cBuffers = 1;
+    _outSecBufDesc.pBuffers = &_outSecBuf;
+    _outSecBuf.cbBuffer = _info->cbMaxToken;
+    _outSecBuf.BufferType = SECBUFFER_TOKEN;
+    _outSecBuf.pvBuffer = static_cast<PBYTE>(malloc (_info->cbMaxToken));
+    _inSecBufDesc.ulVersion = 0;
+    _inSecBufDesc.cBuffers = 1;
+    _inSecBufDesc.pBuffers = &_inSecBuf;
+    _inSecBuf.BufferType = SECBUFFER_TOKEN;
+    delete methodName;
 #endif
+}
+GSSAPISession::~GSSAPISession()
+{
+#ifdef Q_OS_WIN
+    free(_outSecBuf.pvBuffer);
+#endif
+}
+AUTH_RESULT GSSAPISession::authenticate()
+{
+#ifdef Q_OS_WIN
+    SECURITY_STATUS status;
+    _inSecBuf.cbBuffer = static_cast<unsigned long>(inBuffer.length());
+    _inSecBuf.BufferType = SECBUFFER_TOKEN;
+    _inSecBuf.pvBuffer = inBuffer.data();
+    _outSecBuf.cbBuffer = _info->cbMaxToken;
+
+    CtxtHandle* contextPtr = &_context;
+    if(_first)
+    {
+        contextPtr = NULL;
+        _first = false;
     }
-    ~GSSAPISession()
+    status = AcceptSecurityContext (
+                    &_serverHandle,
+                    contextPtr,
+                    &_inSecBufDesc,
+                    0,
+                    SECURITY_NATIVE_DREP,
+                    &_context,
+                    &_outSecBufDesc,
+                    &_attrs,
+                    &_serviceLifetime
+                    );
+
+
+    outBuffer = QByteArray((const char *)_outSecBuf.pvBuffer, _outSecBuf.cbBuffer);
+    if(status == SEC_I_CONTINUE_NEEDED || status == SEC_I_COMPLETE_AND_CONTINUE) return AUTH_RESULT::CONTINUE;
+    if(status == 0)
     {
-#ifdef Q_OS_WIN
-        free(_outSecBuf.pvBuffer);
-#endif
+
+        status = QuerySecurityContextToken(&_context, &_secToken);
+        status  = QueryContextAttributes(&_context, SECPKG_ATTR_NAMES, &_names);
+        return AUTH_RESULT::ACCEPTED;
     }
-    QVariant securityToken() const
-    {
-#ifdef Q_OS_WIN
-        return QVariant::fromValue<void*>(_secToken);
-#endif
-#ifdef Q_OS_UNIX
-        throw "not implemented";
-        return QVariant();
-#endif
-    }
 
-    AUTH_RESULT authenticate()
-    {
-#ifdef Q_OS_WIN
-        SECURITY_STATUS status;
-        _inSecBuf.cbBuffer = inBuffer.length();
-        _inSecBuf.BufferType = SECBUFFER_TOKEN;
-        _inSecBuf.pvBuffer = inBuffer.data();
-        _outSecBuf.cbBuffer = _info->cbMaxToken;
-
-        CtxtHandle* contextPtr = &_context;
-        if(_first)
-        {
-            contextPtr = NULL;
-            _first = false;
-        }
-        status = AcceptSecurityContext (
-                        &_serverHandle,
-                        contextPtr,
-                        &_inSecBufDesc,
-                        0,
-                        SECURITY_NATIVE_DREP,
-                        &_context,
-                        &_outSecBufDesc,
-                        &_attrs,
-                        &_serviceLifetime
-                        );
-
-
-        outBuffer = QByteArray((const char *)_outSecBuf.pvBuffer, _outSecBuf.cbBuffer);
-        if(status == SEC_I_CONTINUE_NEEDED || status == SEC_I_COMPLETE_AND_CONTINUE) return AUTH_RESULT::CONTINUE;
-        if(status == 0)
-        {
-
-            status = QuerySecurityContextToken(&_context, &_secToken);
-            status  = QueryContextAttributes(&_context, SECPKG_ATTR_NAMES, &_names);
-            return AUTH_RESULT::ACCEPTED;
-        }
-
-        return AUTH_RESULT::REJECTED;
+    return AUTH_RESULT::REJECTED;
 #endif
 #ifdef Q_OS_LINUX
-        throw "not implemented";
-        return AUTH_RESULT::REJECTED;
+    throw "not implemented";
+    return AUTH_RESULT::REJECTED;
 #endif
-    }
-
-};
+}
+QVariant GSSAPISession::securityToken() const
+{
+#ifdef Q_OS_WIN
+    return QVariant::fromValue<void*>(_secToken);
+#endif
+#ifdef Q_OS_UNIX
+    throw "not implemented";
+    return QVariant();
+#endif
+}
 
 GSSAPIAuthenticator::GSSAPIAuthenticator(QObject *parent) : Authenticator(parent), d_ptr(new GSSAPIAuthenticatorPrivate())
 {

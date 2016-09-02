@@ -21,8 +21,6 @@ public:
     ErrorInfo init();
 protected:
     SIDUser(SIDUserPrivate &dd, QObject *parent);
-private:
-    Q_DECLARE_PRIVATE(SIDUser)
 };
 }
 #endif // SID_H

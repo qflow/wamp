@@ -106,7 +106,7 @@ void WampConnectionPrivate::handleEvent(const Event& event)
 }
 void WampConnectionPrivate::onConnected()
 {
-    Q_Q(WampConnection);;
+    Q_Q(WampConnection);
 
     q->subscribe(KEY_SUBSCRIPTION_ON_CREATE, std::function<void(double, QVariantMap)>{
                      [q, this](double, QVariantMap info){

@@ -4,6 +4,7 @@
 #include "wamp_global.h"
 #include "role.h"
 #include <QObject>
+#include <memory>
 
 namespace QFlow{
 
@@ -25,10 +26,8 @@ public:
     virtual QByteArray response(QByteArray challenge) = 0;
     virtual QString authMethod() const = 0;
 protected:
-    const QScopedPointer<UserPrivate> d_ptr;
+    const std::unique_ptr<UserPrivate> d_ptr;
     User(UserPrivate &dd, QObject *parent);
-private:
-    Q_DECLARE_PRIVATE(User)
 };
 }
 #endif // USER_H

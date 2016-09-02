@@ -44,6 +44,7 @@ class WAMP_EXPORT Authenticator : public QObject
     static void users_clear(QQmlListProperty<QFlow::User> *prop);
 public:
     Authenticator(QObject* parent = NULL);
+    virtual ~Authenticator();
     virtual QVariantMap generateChallenge(qulonglong sessionId, QString authId) = 0;
     virtual QString authMethod() const = 0;
     QQmlListProperty<User> users();

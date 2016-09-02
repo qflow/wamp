@@ -3,6 +3,7 @@
 #include <QMutex>
 #include <QDebug>
 #include <atomic>
+#include <memory>
 
 #ifdef Q_OS_WIN
 #include <Windows.h>
@@ -52,22 +53,23 @@ QString SIDUser::authMethod() const
 ErrorInfo SIDUser::init()
 {
 #ifdef Q_OS_WIN
-    Q_D(SIDUser);
+    auto d = static_cast<SIDUserPrivate*>(d_ptr.get());
     BOOL b;
     d->_sid = new SID();
     DWORD cbSid = sizeof(SID);
     DWORD cchReferencedDomainName = 0;
     SID_NAME_USE sidNameUse;
-    LPCTSTR s = (LPCTSTR)name().utf16();
+    std::wstring ws = name().toStdWString();
+    const wchar_t* arr = ws.c_str();
     LPTSTR refDomain = NULL;
 
     b = LookupAccountName(NULL,
-                               s,
+                               arr,
                                d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
     SecureZeroMemory(d->_sid, cbSid);
     refDomain = new TCHAR[cchReferencedDomainName];
     b = LookupAccountName(NULL,
-                               s,
+                               arr,
                                d->_sid, &cbSid, refDomain, &cchReferencedDomainName, &sidNameUse);
 #endif
     return ErrorInfo();
@@ -76,7 +78,7 @@ ErrorInfo SIDUser::init()
 bool SIDUser::checkTokenMembership(QVariant handle)
 {
 #ifdef Q_OS_WIN
-    Q_D(SIDUser);
+    auto d = static_cast<SIDUserPrivate*>(d_ptr.get());
     BOOL b;
     HANDLE accessHandle = handle.value<void*>();
     BOOL isMember;
